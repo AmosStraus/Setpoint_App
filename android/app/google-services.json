@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "905806097042",
+    "firebase_url": "https://set-point-attender.firebaseio.com",
+    "project_id": "set-point-attender",
+    "storage_bucket": "set-point-attender.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:905806097042:android:f9158f8a549607dca5144b",
+        "android_client_info": {
+          "package_name": "com.setpoint.set_point_attender"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "905806097042-j9a9b8669v1hm3b0e16siqhk6kegh9mb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtSF4RfU3RZBKwNpKS9gxK4zInFXo6hHo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "905806097042-j9a9b8669v1hm3b0e16siqhk6kegh9mb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
