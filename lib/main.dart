@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:set_point_attender/models/auth.dart';
+// import 'package:set_point_attender/models/database.dart';
 import 'package:set_point_attender/pages/all_done.dart';
 import 'package:set_point_attender/pages/monthly_view_page.dart';
 import 'package:set_point_attender/pages/wrapper.dart';
@@ -11,7 +12,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  print(DateTime.now());
+  // Database.pushEmployeePermissions();
   runApp(MyApp());
 }
 

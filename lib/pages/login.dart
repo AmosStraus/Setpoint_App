@@ -99,7 +99,6 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed: () async {
                           if (_formKey.currentState.validate()) {
                             setState(() => loading = true);
-                            print('$email x $password');
                             dynamic result =
                                 await _auth.signInWithEmailAndPassword(
                                     email.trim(), password.trim());

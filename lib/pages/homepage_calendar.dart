@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:interval_time_picker/interval_time_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:set_point_attender/menus/client_type_menu.dart';
@@ -20,10 +21,10 @@ class HomePageCalendar extends StatefulWidget {
 }
 
 class _HomePageCalendarState extends State<HomePageCalendar> {
-  String client;
+  String clientType;
+  bool changedFormField;
   bool loading;
   String currentValueFromDropdown;
-  String otherValue;
   DateTime currentDate;
   TimeOfDay startTime;
   TimeOfDay finishTime;
@@ -31,7 +32,8 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
   @override
   void initState() {
     super.initState();
-    client = "";
+    clientType = "";
+    changedFormField = false;
     loading = false;
     currentValueFromDropdown = "";
     currentDate = DateTime.now();
@@ -40,8 +42,6 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
   }
 
   void resetForm() {
-    Database.pushEmployeePermissions();
-    // print(Database.getEmployeePermissions('arye', 'Kibbutzim'));
     Navigator.of(context).pop();
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -53,14 +53,15 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final user = Provider.of<User>(context);
+  Widget build(BuildContext contextMain) {
+    final user = Provider.of<User>(contextMain);
     return loading
         ? Loading()
         : WillPopScope(
             onWillPop: () => showDialog<bool>(
-              context: context,
-              builder: (context) => MySettingsAlertDialog(context: context),
+              context: contextMain,
+              builder: (contextMain) =>
+                  MySettingsAlertDialog(context: contextMain),
             ),
             child: Scaffold(
               appBar: AppBar(
@@ -83,18 +84,57 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                     height: 5,
                     thickness: 2,
                   ),
-                  Column(
-                    children: [
-                      MyDatePicker(currentDate, dateFromPicker),
-                      Divider(
-                        color: Colors.black,
-                        height: 5,
-                        thickness: 2,
-                      ),
-                    ],
-                  ),
+                  if (currentValueFromDropdown == "אחר" && clientType == "אחר")
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 15,
+                            horizontal: 25,
+                          ),
+                          child: TypeAheadField(
+                            textFieldConfiguration: TextFieldConfiguration(
+                                style: TextStyle(fontSize: 24),
+                                autofocus: true,
+                                decoration: textInputDecoration.copyWith(
+                                    hintText: 'שם לקוח')),
+                            suggestionsCallback: (pattern) {
+                              return getSuggestions(pattern);
+                            },
+                            itemBuilder: (_, suggestion) {
+                              return Text(suggestion,
+                                  style: TextStyle(fontSize: 24));
+                            },
+                            noItemsFoundBuilder: (_) {
+                              return Text('אנא מלא שם תקין',
+                                  style: TextStyle(fontSize: 18));
+                            },
+                            onSuggestionSelected: (suggestion) {
+                              setState(() {
+                                currentValueFromDropdown = suggestion;
+                                clientType =
+                                    clientAndTypeToEnglish(suggestion)[1];
+                                changedFormField = true;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    Column(
+                      children: [
+                        MyDatePicker(currentDate, dateFromPicker),
+                        Divider(
+                          color: Colors.black,
+                          height: 5,
+                          thickness: 2,
+                        ),
+                      ],
+                    ),
                   FutureBuilder<dynamic>(
-                    future: Database.getApprovalStatus(user.email.split('@')[0],
+                    future: Database.getApprovalStatus(
+                        user?.email?.split('@')?.elementAt(0),
                         currentDate.toString().substring(0, 7)),
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.data == 'approved')
@@ -107,47 +147,18 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                         return ListView(
                           shrinkWrap: true,
                           children: [
-                            if (client == "")
+                            if (clientType == "")
                               ClientTypeMenu(updateParent: updateClientType)
                             else
-                              dropDownChoose(client, user.email.split('@')[0]),
+                              dropDownChoose(clientType,
+                                  user?.email?.split('@')?.elementAt(0)),
                             Divider(
                               color: Colors.black,
                               height: 5,
                               thickness: 2,
                             ),
-                            if (currentValueFromDropdown == "אחר" &&
-                                client == "אחר")
-                              Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 15,
-                                      horizontal: 25,
-                                    ),
-                                    child: TextFormField(
-                                      decoration: textInputDecoration.copyWith(
-                                          hintText: "הכנס/י את שם הפעילות"),
-                                      style: TextStyle(fontSize: 20.0),
-                                      onChanged: (value) =>
-                                          setState(() => otherValue = value),
-                                    ),
-                                  ),
-                                  RaisedButton(
-                                    child: Text("אשר"),
-                                    onPressed: () {
-                                      if (otherValue != '') {
-                                        setState(() {
-                                          currentValueFromDropdown = otherValue;
-                                          client = otherValue;
-                                        });
-                                      }
-                                    },
-                                  )
-                                ],
-                              ),
                             if (currentValueFromDropdown != "" &&
-                                client != "" &&
+                                clientType != "" &&
                                 currentValueFromDropdown != "אחר")
                               Row(
                                 mainAxisAlignment:
@@ -169,7 +180,7 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                                   ),
                                 ),
                               )
-                            else if (client != "" &&
+                            else if (clientType != "" &&
                                 currentValueFromDropdown != "")
                               Column(
                                 children: [
@@ -192,7 +203,7 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                                           children: [
                                             Text(
                                               "$currentValueFromDropdown" +
-                                                  " ${(currentValueFromDropdown == "אחר" ? client : "")}",
+                                                  " ${(currentValueFromDropdown == "אחר" ? clientType : "")}",
                                               style: TextStyle(
                                                   fontSize: 24.0,
                                                   fontWeight: FontWeight.bold),
@@ -247,11 +258,12 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                                       setState(() {
                                         loading = true;
                                       });
+                                      print(clientType);
 
                                       await Database.updateDatabase(
-                                        user.email.split('@')[0],
+                                        user?.email?.split('@')?.elementAt(0),
                                         currentDate.toString(),
-                                        client,
+                                        clientType,
                                         currentValueFromDropdown,
                                         double.parse(
                                             workingTime(startTime, finishTime)),
@@ -264,7 +276,7 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                                         },
                                       );
 
-                                      Navigator.of(context)
+                                      Navigator.of(contextMain)
                                           .pushNamed('/finished');
                                     },
                                     splashColor: Colors.redAccent,
@@ -331,12 +343,41 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
     );
   }
 
-  Widget dropDownChoose(String client, String username) {
-    return MyDropDown(
-        updateParent: valueFromDropDown,
-        currentValue: currentValueFromDropdown,
-        client: client,
-        username: username);
+  Widget dropDownChoose(String clientType, String username) {
+    if (!changedFormField)
+      return MyDropDown(
+          updateParent: valueFromDropDown,
+          currentValue: currentValueFromDropdown,
+          client: clientType,
+          username: username);
+    else
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Text(
+            "$currentValueFromDropdown:",
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontSize: 20.0,
+              fontWeight: FontWeight.bold,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+          SizedBox(width: 20),
+          RaisedButton.icon(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18.0)),
+            color: Colors.grey[300],
+            label: Text("להחלפה", style: TextStyle(fontSize: 18.0)),
+            icon: Icon(Icons.call_split),
+            onPressed: () {
+              setState(() {
+                valueFromDropDown("", reset: true);
+              });
+            },
+          ),
+        ],
+      );
   }
 
   Widget formHeader(User user) {
@@ -345,7 +386,7 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
       child: Column(
         children: [
           Text(
-            "שלום ${employeesToHebrew[user.email.split('@')[0]]}",
+            "שלום ${employeesToHebrew[user?.email?.split('@')?.elementAt(0)]}",
             style: TextStyle(fontSize: 24),
           ),
           Row(
@@ -393,7 +434,7 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
     setState(() {
       currentValueFromDropdown = k;
       if (reset) {
-        client = "";
+        clientType = "";
         currentValueFromDropdown = "";
         startTime = null;
         finishTime = null;
@@ -403,7 +444,7 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
 
   updateClientType(String k) {
     setState(() {
-      client = k;
+      clientType = k;
     });
   }
 }

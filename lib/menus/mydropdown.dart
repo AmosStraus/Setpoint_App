@@ -70,7 +70,6 @@ class _MyDropDownState extends State<MyDropDown> {
               } else if (!snapshot.hasData) {
                 return SimpleLoading();
               } else
-                print(widget.currentValue);
               return DropdownButton<String>(
                 value: widget.currentValue,
                 iconSize: 22,

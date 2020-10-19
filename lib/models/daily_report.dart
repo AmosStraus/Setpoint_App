@@ -4,6 +4,22 @@ class DailyReport {
   String date;
   List<Report> activities;
 
+  static int dailyReportComparator(a, b) {
+    int first = 0;
+    int second = 0;
+    if (a.date[8] == '0') {
+      first = int.parse(a.date.substring(9, 10));
+    } else {
+      first = int.parse(a.date.substring(8, 10));
+    }
+    if (b.date[8] == '0') {
+      second = int.parse(b.date.substring(9, 10));
+    } else {
+      second = int.parse(b.date.substring(8, 10));
+    }
+    return first - second;
+  }
+
   DailyReport({this.activities, this.date}) {
     activities.sort((a, b) {
       return num.parse(a.startTime.split(':')[0]) -
@@ -37,6 +53,6 @@ class Report {
 
   @override
   String toString() {
-    return '${activityToHebrew(clientName)} - \n התחלה $startTime, סיום $finishTime';
+    return '${clientAndTypeToHebrew(clientName)[0]} - \n התחלה $startTime, סיום $finishTime';
   }
 }

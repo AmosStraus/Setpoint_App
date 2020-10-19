@@ -15,6 +15,7 @@ class LogoutBurgerWidget extends StatelessWidget {
       onSelected: (String value) {
         switch (value) {
           case 'התנתקות':
+            // Navigator.of(context).pop();
             showAlertDialog(context);
             break;
           case 'דיווח חודשי':
@@ -60,13 +61,15 @@ class LogoutBurgerWidget extends StatelessWidget {
     Widget cancelButton = FlatButton(
       child: Text("לא"),
       onPressed: () {
-        Navigator.pop(context);
+        Navigator.pop(context, false);
       },
     );
     Widget continueButton = FlatButton(
       child: Text("כן"),
       onPressed: () async {
         await _auth.signOut();
+        Navigator.pop(context, true);
+        Navigator.pop(context);
         Navigator.pushNamed(context, '/');
       },
     );
@@ -90,6 +93,3 @@ class LogoutBurgerWidget extends StatelessWidget {
     );
   }
 }
-
-
-

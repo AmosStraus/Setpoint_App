@@ -96,6 +96,7 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
                 }
               },
             ),
+            SizedBox(height: 10),
             FutureBuilder<dynamic>(
               future: Database.getApprovalStatus(
                   username, rawDate.toString().substring(0, 7)),
@@ -184,6 +185,9 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
         monthlyReports.add(DailyReport(date: date, activities: list));
       }
     });
+
+// sort that shit
+    monthlyReports.sort(DailyReport.dailyReportComparator);
     return monthlyReports;
   }
 }
