@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:set_point_attender/models/auth.dart';
+import 'package:set_point_attender/shared/parse_names.dart';
 
 class LogoutBurgerWidget extends StatelessWidget {
   final AuthService _auth = AuthService();
@@ -26,6 +27,11 @@ class LogoutBurgerWidget extends StatelessWidget {
             Navigator.of(context).pop();
             Navigator.of(context).pushNamed('/');
             break;
+          case 'פתיחת דיווח לעובד':
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamed('/reOpenReport');
+
+            break;
         }
       },
       itemBuilder: (BuildContext context) {
@@ -34,23 +40,31 @@ class LogoutBurgerWidget extends StatelessWidget {
             value: 'דף ראשי',
             child: Text(
               'דף ראשי',
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(fontSize: 22),
             ),
           ),
           PopupMenuItem<String>(
             value: 'דיווח חודשי',
             child: Text(
               'דיווח חודשי',
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(fontSize: 22),
             ),
           ),
           PopupMenuItem<String>(
             value: 'התנתקות',
             child: Text(
               'התנתקות',
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(fontSize: 22),
             ),
           ),
+          if (authorized.contains(_auth.getUser?.email))
+            PopupMenuItem<String>(
+              value: 'פתיחת דיווח לעובד',
+              child: Text(
+                'פתיחת דיווח לעובד',
+                style: TextStyle(fontSize: 22),
+              ),
+            )
         ];
       },
     );
@@ -59,13 +73,13 @@ class LogoutBurgerWidget extends StatelessWidget {
   showAlertDialog(BuildContext context) {
     // set up the buttons
     Widget cancelButton = FlatButton(
-      child: Text("לא"),
+      child: Text("לא", style: TextStyle(fontSize: 22)),
       onPressed: () {
         Navigator.pop(context, false);
       },
     );
     Widget continueButton = FlatButton(
-      child: Text("כן"),
+      child: Text("כן", style: TextStyle(fontSize: 22)),
       onPressed: () async {
         await _auth.signOut();
         Navigator.pop(context, true);
@@ -76,8 +90,8 @@ class LogoutBurgerWidget extends StatelessWidget {
 
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
-      title: Text("התנתקות"),
-      content: Text("?האם תרצה להתנתק"),
+      title: Text("התנתקות", style: TextStyle(fontSize: 22)),
+      content: Text("?האם תרצה להתנתק", style: TextStyle(fontSize: 22)),
       actions: [
         cancelButton,
         continueButton,

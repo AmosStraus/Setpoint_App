@@ -5,6 +5,7 @@ import 'package:set_point_attender/models/auth.dart';
 // import 'package:set_point_attender/models/database.dart';
 import 'package:set_point_attender/pages/all_done.dart';
 import 'package:set_point_attender/pages/monthly_view_page.dart';
+import 'package:set_point_attender/pages/reopen_report.dart';
 import 'package:set_point_attender/pages/wrapper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -12,7 +13,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  // Database.pushEmployeePermissions();
+  // Database.pushAllPermissionsForAll();
   runApp(MyApp());
 }
 
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
           '/': (_) => Wrapper(),
           '/finished': (_) => AllDone(),
           '/monthlyReports': (_) => MonthlyViewPage(),
+          '/reOpenReport': (_) => ReopenReport(),
         },
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
         supportedLocales: [

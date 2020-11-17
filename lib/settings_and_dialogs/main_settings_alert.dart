@@ -7,15 +7,15 @@ class MySettingsAlertDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('יציאה'),
-      content: Text("?האם תרצה לצאת"),
+      title: Text('יציאה', style: TextStyle(fontSize: 22)),
+      content: Text("?האם תרצה לצאת", style: TextStyle(fontSize: 22)),
       actions: [
         FlatButton(
-          child: Text('כן'),
+          child: Text('כן', style: TextStyle(fontSize: 22)),
           onPressed: () => Navigator.pop(context, true),
         ),
         FlatButton(
-          child: Text('לא'),
+          child: Text('לא', style: TextStyle(fontSize: 22)),
           onPressed: () => Navigator.pop(context, false),
         ),
       ],

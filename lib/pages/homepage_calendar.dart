@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:set_point_attender/menus/client_type_menu.dart';
 import 'package:set_point_attender/menus/mydropdown.dart';
 import 'package:set_point_attender/menus/settings_menu.dart';
+import 'package:set_point_attender/models/daily_report.dart';
 import 'package:set_point_attender/models/database.dart';
 import 'package:set_point_attender/models/date_picker.dart';
 import 'package:set_point_attender/settings_and_dialogs/main_settings_alert.dart';
@@ -55,6 +56,7 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
   @override
   Widget build(BuildContext contextMain) {
     final user = Provider.of<User>(contextMain);
+    final TextEditingController _typeAheadController = TextEditingController();
     return loading
         ? Loading()
         : WillPopScope(
@@ -97,7 +99,8 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                                 style: TextStyle(fontSize: 24),
                                 autofocus: true,
                                 decoration: textInputDecoration.copyWith(
-                                    hintText: 'שם לקוח')),
+                                    hintText: 'שם לקוח'),
+                                controller: _typeAheadController),
                             suggestionsCallback: (pattern) {
                               return getSuggestions(pattern);
                             },
@@ -106,8 +109,19 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                                   style: TextStyle(fontSize: 24));
                             },
                             noItemsFoundBuilder: (_) {
-                              return Text('אנא מלא שם תקין',
-                                  style: TextStyle(fontSize: 18));
+                              return RaisedButton(
+                                  child: Text(
+                                      'הלקוח בשם זה לא קיים, לחץ להוספה בכל זאת',
+                                      style: TextStyle(fontSize: 18)),
+                                  onPressed: () {
+                                    setState(() {
+                                      currentValueFromDropdown =
+                                          _typeAheadController.text;
+                                      clientType = clientAndTypeToEnglish(
+                                          _typeAheadController.text)[1];
+                                      changedFormField = true;
+                                    });
+                                  });
                             },
                             onSuggestionSelected: (suggestion) {
                               setState(() {
@@ -145,8 +159,16 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                             fontWeight: FontWeight.bold);
                       else
                         return ListView(
+                          physics: NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
                           children: [
+                            dailyDisplayer(
+                                user?.email?.split('@')?.elementAt(0)),
+                            Divider(
+                              color: Colors.black,
+                              height: 5,
+                              thickness: 2,
+                            ),
                             if (clientType == "")
                               ClientTypeMenu(updateParent: updateClientType)
                             else
@@ -258,7 +280,6 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                                       setState(() {
                                         loading = true;
                                       });
-                                      print(clientType);
 
                                       await Database.updateDatabase(
                                         user?.email?.split('@')?.elementAt(0),
@@ -281,6 +302,7 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                                     },
                                     splashColor: Colors.redAccent,
                                   ),
+                                  SizedBox(height: 15)
                                 ],
                               ),
                           ],
@@ -372,6 +394,9 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
             icon: Icon(Icons.call_split),
             onPressed: () {
               setState(() {
+                currentValueFromDropdown = "";
+                clientType = "";
+                changedFormField = false;
                 valueFromDropDown("", reset: true);
               });
             },
@@ -413,7 +438,7 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
                 },
                 icon: Icon(Icons.refresh),
                 label: Text(
-                  "איפוס טופס",
+                  "איפוס דיווח נוכחי",
                   style: TextStyle(fontSize: 20.0),
                 ),
               ),
@@ -446,5 +471,86 @@ class _HomePageCalendarState extends State<HomePageCalendar> {
     setState(() {
       clientType = k;
     });
+  }
+
+  dailyDisplayer(username) {
+    return StreamBuilder(
+      stream: Database.getReportsFromDay(
+          username, rawDateToDateString(currentDate)),
+      builder: (_, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: Container(
+                padding: EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.red[200],
+                ),
+                child: Text(
+                  "עוד אין דיווחים עבור יום זה",
+                  style: TextStyle(fontSize: 24),
+                )),
+          );
+        } else if (snapshot.hasError) {
+          return Text("ERROR");
+        } else {
+          var dailyReport = createDailyReportList(snapshot);
+          return ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: dailyReport?.activities?.length == null
+                  ? 1
+                  : dailyReport.activities.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Text(
+                    "דיווחים קיימים ליום: ${currentDate.toString().substring(5, 10)}",
+                    style: TextStyle(
+                        fontSize: 24, decoration: TextDecoration.underline),
+                  );
+                }
+                index -= 1;
+                return Card(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        dailyReport?.activities[index]?.toString(),
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      FlatButton.icon(
+                          color: Colors.red[200],
+                          onPressed: () {
+                            Database.deleteReport(
+                                username,
+                                dailyReport?.activities[index],
+                                dailyReport.date);
+                          },
+                          icon: Icon(
+                            Icons.delete,
+                            size: 16,
+                          ),
+                          label: Text("מחק",
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold)))
+                    ],
+                  ),
+                );
+              });
+        }
+      },
+    );
+  }
+
+  createDailyReportList(AsyncSnapshot snapshot) {
+    List<Report> list = [];
+    Map.from(snapshot.data).forEach((clientName, value2) {
+      value2.forEach((key3, details) {
+        list.add(Report.fromSnapshot(clientName, details));
+      });
+    });
+
+    return (DailyReport(
+        date: rawDateToDateString(currentDate), activities: list));
   }
 }

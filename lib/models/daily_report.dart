@@ -55,4 +55,11 @@ class Report {
   String toString() {
     return '${clientAndTypeToHebrew(clientName)[0]} - \n התחלה $startTime, סיום $finishTime';
   }
+
+  get totalTime {
+    return int.parse(finishTime.split(':')[1]) * 60 +
+        int.parse(finishTime.split(':')[0]) -
+        (int.parse(startTime.split(':')[1]) * 60 +
+            int.parse(startTime.split(':')[0]));
+  }
 }

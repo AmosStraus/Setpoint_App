@@ -65,7 +65,7 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
             ),
             SizedBox(height: 8),
             StreamBuilder(
-              stream: getReportsFromMonth(
+              stream: Database.getReportsFromMonth(
                   username, rawDate.toString().substring(0, 7)),
               builder: (_, snapshot) {
                 if (!snapshot.hasData) {
@@ -162,15 +162,6 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
     );
   }
 
-  getReportsFromMonth(String username, String text) async* {
-    var mapFromServer = await Database.databaseReference
-        .child('Employees/$username/$text')
-        .once()
-        .then((snapshot) {
-      return snapshot.value;
-    });
-    yield mapFromServer;
-  }
 
   createMonthReportList(AsyncSnapshot snapshot) {
     List<DailyReport> monthlyReports = [];

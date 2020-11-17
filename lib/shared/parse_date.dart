@@ -32,7 +32,7 @@ String workingTime(TimeOfDay startTime, TimeOfDay finishTime) {
 bool isValidHourReport(TimeOfDay startTime, TimeOfDay finishTime) {
   return (startTime != null &&
       finishTime != null &&
-      (toDouble(startTime) <= toDouble(finishTime)));
+      (toDouble(startTime) < toDouble(finishTime)));
 }
 
 double toDouble(TimeOfDay myTime) {
